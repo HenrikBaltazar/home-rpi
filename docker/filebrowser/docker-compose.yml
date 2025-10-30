@@ -1,0 +1,27 @@
+services:
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    ports:
+      - "8081:8080"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /srv/media:/srv
+      - filebrowser_config:/config
+      - filebrowser_database:/database
+    command: [
+      "--database", "/database/filebrowser.db",
+      "--config", "/config/.filebrowser.json",
+      "--root","/srv",
+      "--address","0.0.0.0"
+    ]
+    restart: unless-stopped
+
+volumes:
+  filebrowser_data:
+  filebrowser_config:
+  filebrowser_database:
+
