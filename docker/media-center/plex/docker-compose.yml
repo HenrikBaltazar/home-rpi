@@ -11,7 +11,7 @@ services:
     volumes:
       - /srv/plex/config:/config
       - /srv/plex/transcode:/transcode
-      - /srv/media/Plex/Videos:/data/Videos
-      - /srv/media/Plex/Filmes:/data/Filmes
+      - /srv/media/center/Videos:/data/Videos
+      - /srv/media/center/Filmes:/data/Filmes
+      - /srv/media/center/Series:/data/TVShows
     restart: unless-stopped
-

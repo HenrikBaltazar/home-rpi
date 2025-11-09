@@ -1,0 +1,116 @@
+networks:
+  media-center:
+    driver: bridge
+
+services:
+  qbittorrent:
+    image: linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    networks:
+      - media-center
+    ports:
+      - "8082:8082"
+      - "6881:6881"
+      - "6881:6881/udp"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+      - WEBUI_PORT=8082
+      - TORRENTING_PORT=6881
+    volumes:
+      - /srv/media/downloads:/downloads
+      - /srv/qbittorrent/config:/config
+    restart: unless-stopped
+
+  prowlarr:
+    image: linuxserver/prowlarr:latest
+    container_name: prowlarr
+    networks:
+      - media-center
+    ports:
+      - "8083:9696"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /srv/prowlarr/config:/config
+    restart: unless-stopped
+  
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    networks:
+      - media-center
+    ports:
+      - 8191:8191
+    environment:
+      - TZ=America/Sao_Paulo
+    restart: unless-stopped
+
+  radarr:
+    image: linuxserver/radarr:latest
+    container_name: radarr
+    networks:
+      - media-center
+    ports:
+      - "8084:7878"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /srv/radarr/config:/config
+      - /srv/media/downloads:/downloads
+      - /srv/media/center/Filmes:/movies
+    restart: unless-stopped
+
+  sonarr:
+    image: linuxserver/sonarr:latest
+    container_name: sonarr
+    networks:
+      - media-center
+    ports:
+      - "8085:8989"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /srv/sonarr/config:/config
+      - /srv/media/downloads:/downloads
+      - /srv/media/center/Series:/tv
+    restart: unless-stopped
+
+  bazarr:
+    image: linuxserver/bazarr:latest
+    container_name: bazarr
+    networks:
+      - media-center
+    ports:
+      - "8086:6767"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /srv/bazarr/config:/config
+      - /srv/media/center/Filmes:/movies
+      - /srv/media/center/Series:/tv
+    restart: unless-stopped
+
+  homarr:
+    image: ghcr.io/homarr-labs/homarr:latest
+    container_name: homarr
+    networks:
+      - media-center
+    ports:
+      - "8087:7575"
+    environment:
+      - SECRET_ENCRYPTION_KEY=${SECRET_ENCRYPTION_KEY}
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /srv/homarr/appdata:/appdata
+    restart: unless-stopped
