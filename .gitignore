@@ -1,2 +1,3 @@
 docker/pihole/etc-pihole/
 *.env
+docker/media-center/dozzle/users.yml

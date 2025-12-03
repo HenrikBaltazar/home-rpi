@@ -64,6 +64,7 @@ services:
       - /srv/radarr/config:/config
       - /srv/media/downloads:/downloads
       - /srv/media/center/Filmes:/movies
+      - /srv/nfty-arr-script:/config/custom_scripts
     restart: unless-stopped
 
   sonarr:
@@ -81,6 +82,7 @@ services:
       - /srv/sonarr/config:/config
       - /srv/media/downloads:/downloads
       - /srv/media/center/Series:/tv
+      - /srv/nfty-arr-script:/config/custom_scripts
     restart: unless-stopped
 
   bazarr:
@@ -111,6 +113,34 @@ services:
       - SECRET_ENCRYPTION_KEY=${SECRET_ENCRYPTION_KEY}
       - TZ=America/Sao_Paulo
     volumes:
+      - ./config:/app/data/configs
+      - ./icons:/app/public/icons
       - /var/run/docker.sock:/var/run/docker.sock
       - /srv/homarr/appdata:/appdata
     restart: unless-stopped
+
+  dash-dot:
+    image:   mauricenino/dashdot:latest
+    container_name: dash-dot
+    networks:
+      - media-center
+    ports:
+      - 8088:3001
+    volumes:
+      - /:/mnt/host:ro
+    privileged: true
+    restart: unless-stopped
+
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    networks:
+      - media-center
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./dozzle/users.yml:/data/users.yml
+    ports:
+      - 8090:8080
+    environment:
+      - DOZZLE_ENABLE_ACTIONS=true
+      - DOZZLE_ENABLE_SHELL=true
