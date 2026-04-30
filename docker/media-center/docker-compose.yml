@@ -3,20 +3,63 @@ networks:
     driver: bridge
 
 services:
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflared
+    networks:
+      - media-center
+    environment:
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+    command: tunnel --no-autoupdate run
+    restart: unless-stopped
+  
+  swag:
+    image: lscr.io/linuxserver/swag:latest
+    container_name: swag
+    cap_add:
+      - NET_ADMIN
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+      - URL=${LAB_URL}
+      - VALIDATION=${VALIDATION}
+      - DNSPLUGIN=${DNSPLUGIN}
+    volumes:
+      - /srv/swag:/config
+    networks:
+      - media-center
+    #ports:
+     # - 80:80
+     # - 443:443
+    restart: unless-stopped
+  
+  heimdall:
+    image: lscr.io/linuxserver/heimdall:latest
+    container_name: heimdall
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /srv/heimdall:/config
+    networks:
+      - media-center
+    restart: unless-stopped
   qbittorrent:
     image: linuxserver/qbittorrent:latest
     container_name: qbittorrent
     networks:
       - media-center
     ports:
-      - "8082:8082"
+      #- "8082:8082"
       - "6881:6881"
       - "6881:6881/udp"
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=America/Sao_Paulo
-      - WEBUI_PORT=8082
+      - WEBUI_PORT=8080
       - TORRENTING_PORT=6881
     volumes:
       - /srv/media/downloads:/downloads
@@ -28,8 +71,8 @@ services:
     container_name: prowlarr
     networks:
       - media-center
-    ports:
-      - "8083:9696"
+    #ports:
+      #- "8083:9696"
     environment:
       - PUID=1000
       - PGID=1000
@@ -43,8 +86,8 @@ services:
     container_name: flaresolverr
     networks:
       - media-center
-    ports:
-      - 8191:8191
+    #ports:
+      #- 8191:8191
     environment:
       - TZ=America/Sao_Paulo
     restart: unless-stopped
@@ -54,8 +97,8 @@ services:
     container_name: radarr
     networks:
       - media-center
-    ports:
-      - "8084:7878"
+    #ports:
+      #- "8084:7878"
     environment:
       - PUID=1000
       - PGID=1000
@@ -72,8 +115,8 @@ services:
     container_name: sonarr
     networks:
       - media-center
-    ports:
-      - "8085:8989"
+    #ports:
+      #- "8085:8989"
     environment:
       - PUID=1000
       - PGID=1000
@@ -90,8 +133,8 @@ services:
     container_name: bazarr
     networks:
       - media-center
-    ports:
-      - "8086:6767"
+    #ports:
+      #- "8086:6767"
     environment:
       - PUID=1000
       - PGID=1000
@@ -130,6 +173,24 @@ services:
       - /:/mnt/host:ro
     privileged: true
     restart: unless-stopped
+  
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    networks:
+      - media-center
+    #ports:
+      #- 8096:8096
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+      - JELLYFIN_PublishedServerUrl=${JELLYFIN_URL}
+    volumes:
+      - /srv/jellyfin/config:/config
+      - /srv/media/center/Series:/data/tvshows
+      - /srv/media/center/Filmes:/data/movies
+    restart: unless-stopped
 
   dozzle:
     image: amir20/dozzle:latest
@@ -139,8 +200,33 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./dozzle/users.yml:/data/users.yml
-    ports:
-      - 8090:8080
+    #ports:
+      #- 8090:8080
     environment:
       - DOZZLE_ENABLE_ACTIONS=true
       - DOZZLE_ENABLE_SHELL=true
+      - DOZZLE_BASE=/dozzle
+ 
+  filebrowser:
+    image: filebrowser/filebrowser:latest
+    container_name: filebrowser
+    #ports:
+      #- "8081:8080"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    networks:
+      - media-center
+    volumes:
+      - /srv/media:/srv
+      - /srv/filebrowser/config:/config
+      - /srv/filebrowser/database:/database
+    command: [
+      "--database", "/database/filebrowser.db",
+      "--config", "/config/.filebrowser.json",
+      "--root","/srv",
+      "--address","0.0.0.0",
+      "--baseurl","/filebrowser"
+    ]
+    restart: unless-stopped
