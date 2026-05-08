@@ -169,6 +169,9 @@ services:
       - media-center
     ports:
       - 8088:3001
+    environment:
+      - TZ=America/Sao_Paulo
+      #- DASHDOT_ROUTING_PATH=${DASHDOT_WIDGET_URL}
     volumes:
       - /:/mnt/host:ro
     privileged: true
@@ -210,8 +213,8 @@ services:
   filebrowser:
     image: filebrowser/filebrowser:latest
     container_name: filebrowser
-    #ports:
-      #- "8081:8080"
+    ports:
+      - "8081:8080"
     environment:
       - PUID=1000
       - PGID=1000
@@ -229,4 +232,21 @@ services:
       "--address","0.0.0.0",
       "--baseurl","/filebrowser"
     ]
+    restart: unless-stopped
+  keepassxc:
+    image: lscr.io/linuxserver/keepassxc:latest
+    container_name: keepassxc
+    networks:
+      - media-center
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+      - CUSTOM_USER=${KP_USER}
+      - PASSWORD=${KP_PW}
+      - SUBFOLDER=${KP_PATH}
+    volumes:
+      - /srv/keepassxc:/config
+      - /srv/media/backup:/data
+    shm_size: "1gb"
     restart: unless-stopped
