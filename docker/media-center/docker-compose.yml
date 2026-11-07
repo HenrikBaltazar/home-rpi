@@ -219,3 +219,20 @@ services:
     networks:
       - cloudflared_net
 
+
+  # [Gemini 4 Argon | 2026-11-07 19:20] Added threadfin IPTV proxy & HDHomeRun tuner service
+  threadfin:
+    image: fyb3roptik/threadfin:1.2.37
+    container_name: threadfin
+    networks:
+      - cloudflared_net
+    ports:
+      - "34400:34400"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Sao_Paulo
+    volumes:
+      - /srv/threadfin/conf:/home/threadfin/conf
+      - /srv/threadfin/temp:/tmp/threadfin
+    restart: unless-stopped
